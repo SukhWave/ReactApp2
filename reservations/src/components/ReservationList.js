@@ -1,17 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import '../home.css';  // use the same CSS for card styling
+import '../home.css';
 
 function ReservationList() {
   const [reservations, setReservations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const reservationsPerPage = 4;
 
   useEffect(() => {
     axios
       .get('http://localhost/reactapp2/blog_server/api/get-reservations.php')
-      .then((res) => setReservations(res.data))
-      .catch((err) => console.error('Error fetching reservations:', err));
+      .then(res => setReservations(res.data))
+      .catch(err => console.error('Error fetching reservations:', err));
   }, []);
+
+  // Pagination calculations
+  const indexOfLast = currentPage * reservationsPerPage;
+  const indexOfFirst = indexOfLast - reservationsPerPage;
+  const currentReservations = reservations.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(reservations.length / reservationsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
 
   return (
     <div className="home-container">
@@ -20,22 +40,46 @@ function ReservationList() {
       {reservations.length === 0 ? (
         <p className="no-reservations">No reservations yet. Create one!</p>
       ) : (
-        <div className="cards-container">
-          {reservations.map((reservation) => (
-            <div key={reservation.id} className="reservation-card">
-              <h3 className="card-title">{reservation.area_name}</h3>
-              <p className="card-text">
-                <strong>Time Slot:</strong> {reservation.slot_time}
-              </p>
-              <p className="card-text">
-                <strong>Status:</strong> {reservation.is_booked ? 'Booked' : 'Available'}
-              </p>
-              <Link to={`/reservation/${reservation.id}`} className="read-more-btn">
-                Read More
-              </Link>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="cards-container">
+            {currentReservations.map(reservation => (
+              <div key={reservation.id} className="reservation-card">
+                <h3 className="card-title">{reservation.area_name}</h3>
+                <p className="card-text"><strong>Time Slot:</strong> {reservation.slot_time}</p>
+                <Link to={`/reservation/${reservation.id}`} className="read-more-btn">
+                  Read More
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination controls */}
+          <div className="pagination">
+            <button
+              onClick={handlePrev}
+              className={`page-btn ${currentPage === 1 ? 'disabled' : ''}`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(page => (
+              <button
+                key={page}
+                className={`page-btn ${page === currentPage ? 'active' : ''}`}
+                onClick={() => handlePageChange(page)}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={handleNext}
+              className={`page-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
