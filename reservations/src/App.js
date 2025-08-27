@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
 import CreateReservations from './components/CreateReservations';
-// import Reservation from './components/Reservation';
-// import ReservationList from './components/ReservationList';
+import ReservationList from './components/ReservationList';
+import Reservation from './components/Reservation';
 
 function App() {
   return (
@@ -12,9 +12,9 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          {/* <Route path="/" element={<ReservationList />} /> */}
+          <Route path="/" element={<ReservationList />} />
           <Route path="/create-reservation" element={<CreateReservations />} />
-          {/* <Route path="/reservation/:id" element={<Reservation />} /> */}
+          <Route path="/reservation/:id" element={<Reservation />} />
         </Routes>
       </BrowserRouter>
     </div>

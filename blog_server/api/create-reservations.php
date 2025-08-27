@@ -1,12 +1,13 @@
 <?php
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-header("Access-Control-Allow-Origin: *");  // Allow all origins or replace with your frontend domain
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
-
-require_once('../config/config.php');
-require_once('../config/database.php');
+// CORS headers — adjust origin if needed
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -14,14 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Get the JSON input
+// Database connection
+require_once('../config/database.php');  // Adjust path if needed
+
+// Get JSON input
 $request_body = file_get_contents('php://input');
 $data = json_decode($request_body, true);
 
 // Validate required fields
-if (!isset($data['area_id']) || !isset($data['time_slot_id']) || !isset($data['is_booked'])) {
+if (!isset($data['area_id'], $data['time_slot_id'], $data['is_booked'])) {
     http_response_code(400);
-    echo json_encode(['message' => 'Error: Missing required parameter']);
+    echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
     exit();
 }
 
@@ -30,29 +34,29 @@ $area_id = filter_var($data['area_id'], FILTER_VALIDATE_INT);
 $time_slot_id = filter_var($data['time_slot_id'], FILTER_VALIDATE_INT);
 $is_booked = filter_var($data['is_booked'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
-// Validate sanitization
 if ($area_id === false || $time_slot_id === false || $is_booked === null) {
     http_response_code(400);
-    echo json_encode(['message' => 'Error: Invalid input data']);
+    echo json_encode(['success' => false, 'message' => 'Invalid input data']);
     exit();
 }
 
-// Convert boolean to integer for database storage (0 or 1)
 $is_booked = $is_booked ? 1 : 0;
 
-// Optional: Add support for user_name or reserved_at if needed
-$stmt = $conn->prepare('INSERT INTO reservations (area_id, time_slot_id, is_booked) VALUES (?, ?, ?)');
-$stmt->bind_param('iii', $area_id, $time_slot_id, $is_booked);
+// Insert reservation
+$stmt = $conn->prepare("INSERT INTO reservations (area_id, time_slot_id, is_booked) VALUES (?, ?, ?)");
+$stmt->bind_param("iii", $area_id, $time_slot_id, $is_booked);
 
 if ($stmt->execute()) {
-    http_response_code(201);
-    echo json_encode(['message' => 'Reservation created successfully', 'id' => $stmt->insert_id]);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Reservation created successfully',
+        'reservation_id' => $stmt->insert_id
+    ]);
 } else {
     http_response_code(500);
-    echo json_encode(['message' => 'Error creating reservation: ' . $stmt->error]);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
 }
 
 $stmt->close();
 $conn->close();
-
 ?>
