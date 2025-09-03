@@ -11,7 +11,9 @@ function Reservation() {
   const fetchReservation = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost/reactapp2/blog_server/api/get-reservation.php?id=${id}`);
+      const res = await axios.get(
+        `http://localhost/reactapp2/blog_server/api/get-reservation.php?id=${id}`
+      );
       setReservation(res.data);
     } catch (err) {
       console.error('Error fetching reservation:', err);
@@ -36,11 +38,11 @@ function Reservation() {
       );
 
       if (res.data.success) {
-        setReservation(prev => ({
+        setReservation((prev) => ({
           ...prev,
           book_count: action === 'book' ? 1 : 0,
           unbook_count: action === 'unbook' ? 1 : 0,
-          is_booked: action === 'book' ? 1 : 0
+          is_booked: action === 'book' ? 1 : 0,
         }));
       } else {
         console.error('Server error:', res.data.message);
@@ -52,39 +54,80 @@ function Reservation() {
     }
   };
 
-  if (loading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Loading reservation...</p>;
-  if (!reservation) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Reservation not found.</p>;
+  if (loading)
+    return (
+      <p style={{ textAlign: 'center', marginTop: '50px' }}>
+        Loading reservation...
+      </p>
+    );
+
+  if (!reservation)
+    return (
+      <p style={{ textAlign: 'center', marginTop: '50px' }}>
+        Reservation not found.
+      </p>
+    );
+
+  // ✅ Safe fallback for image
+  const imageSrc = `http://localhost/reactapp2/blog_server/api/uploads/${
+    reservation.imageName && reservation.imageName.trim() !== ''
+      ? reservation.imageName
+      : 'placeholder_100.jpg'
+  }`;
 
   return (
-    <div style={{
-      maxWidth: '700px',
-      margin: '50px auto',
-      padding: '25px',
-      border: '1px solid #ddd',
-      borderRadius: '10px',
-      boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
-      backgroundColor: '#fff'
-    }}>
-      <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '10px' }}>
+    <div
+      style={{
+        maxWidth: '700px',
+        margin: '50px auto',
+        padding: '25px',
+        border: '1px solid #ddd',
+        borderRadius: '10px',
+        boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
+        backgroundColor: '#fff',
+      }}
+    >
+      <h2
+        style={{
+          textAlign: 'center',
+          color: '#333',
+          marginBottom: '10px',
+        }}
+      >
         {reservation.area_name}
       </h2>
 
       {/* Image Section */}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <img
-          src={`http://localhost/reactapp2/blog_server/api/uploads/${reservation.imageName}`}
+          src={imageSrc}
           alt={reservation.area_name}
           style={{ maxWidth: '100%', borderRadius: '10px' }}
         />
       </div>
 
       <hr style={{ margin: '20px 0' }} />
-      <p><strong>Time Slot:</strong> {reservation.slot_time}</p>
-      <p style={{ marginTop: '15px', lineHeight: '1.6', color: '#555' }}>
+      <p>
+        <strong>Time Slot:</strong> {reservation.slot_time}
+      </p>
+      <p
+        style={{
+          marginTop: '15px',
+          lineHeight: '1.6',
+          color: '#555',
+        }}
+      >
         {reservation.description}
       </p>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px',
+          marginTop: '30px',
+        }}
+      >
         <button
           onClick={() => handleAction('book')}
           disabled={updating || reservation.book_count === 1}
@@ -92,11 +135,13 @@ function Reservation() {
             padding: '10px 20px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: reservation.book_count === 1 ? '#ccc' : '#4CAF50',
+            backgroundColor:
+              reservation.book_count === 1 ? '#ccc' : '#4CAF50',
             color: 'white',
-            cursor: reservation.book_count === 1 ? 'not-allowed' : 'pointer',
+            cursor:
+              reservation.book_count === 1 ? 'not-allowed' : 'pointer',
             fontWeight: 'bold',
-            transition: 'background 0.3s'
+            transition: 'background 0.3s',
           }}
         >
           Book ({reservation.book_count})
@@ -109,11 +154,13 @@ function Reservation() {
             padding: '10px 20px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: reservation.unbook_count === 1 ? '#ccc' : '#f44336',
+            backgroundColor:
+              reservation.unbook_count === 1 ? '#ccc' : '#f44336',
             color: 'white',
-            cursor: reservation.unbook_count === 1 ? 'not-allowed' : 'pointer',
+            cursor:
+              reservation.unbook_count === 1 ? 'not-allowed' : 'pointer',
             fontWeight: 'bold',
-            transition: 'background 0.3s'
+            transition: 'background 0.3s',
           }}
         >
           Unbook ({reservation.unbook_count})
