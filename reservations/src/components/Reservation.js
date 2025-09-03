@@ -32,11 +32,10 @@ function Reservation() {
       const res = await axios.post(
         'http://localhost/reactapp2/blog_server/api/update-book-count.php',
         { reservation_id: id, action },
-        { headers: { 'Content-Type': 'application/json' } } // ensures PHP reads JSON
+        { headers: { 'Content-Type': 'application/json' } }
       );
 
       if (res.data.success) {
-        // Update the reservation counts locally without waiting for a full fetch
         setReservation(prev => ({
           ...prev,
           book_count: action === 'book' ? 1 : 0,
@@ -66,10 +65,24 @@ function Reservation() {
       boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
       backgroundColor: '#fff'
     }}>
-      <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '10px' }}>{reservation.area_name}</h2>
+      <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '10px' }}>
+        {reservation.area_name}
+      </h2>
+
+      {/* Image Section */}
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <img
+          src={`http://localhost/reactapp2/blog_server/api/uploads/${reservation.imageName}`}
+          alt={reservation.area_name}
+          style={{ maxWidth: '100%', borderRadius: '10px' }}
+        />
+      </div>
+
       <hr style={{ margin: '20px 0' }} />
       <p><strong>Time Slot:</strong> {reservation.slot_time}</p>
-      <p style={{ marginTop: '15px', lineHeight: '1.6', color: '#555' }}>{reservation.description}</p>
+      <p style={{ marginTop: '15px', lineHeight: '1.6', color: '#555' }}>
+        {reservation.description}
+      </p>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px' }}>
         <button

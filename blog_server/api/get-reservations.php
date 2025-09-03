@@ -9,13 +9,18 @@ header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Content-Type: application/json");
 
 // Database connection
-require_once('../config/database.php');  // Adjust path if needed
+require_once('../config/database.php');
 
-// Fetch reservations with area and timeslot
-$sql = "SELECT r.id, c.name AS area_name, t.slot_time, r.is_booked
+$sql = "SELECT r.id, 
+               c.name AS area_name, 
+               t.slot_time, 
+               r.is_booked,
+               COALESCE(r.imageName, 'placeholder_100.jpg') AS imageName
         FROM reservations r
         JOIN conservation_areas c ON r.area_id = c.id
         JOIN time_slots t ON r.time_slot_id = t.id";
+
+
 
 $result = $conn->query($sql);
 
@@ -23,6 +28,10 @@ $reservations = [];
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        // Use placeholder if image is empty
+        if (empty($row['imageName'])) {
+            $row['imageName'] = 'placeholder_100.jpg';
+        }
         $reservations[] = $row;
     }
     echo json_encode($reservations);

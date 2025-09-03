@@ -8,6 +8,7 @@ function CreateReservations() {
   const [selectedArea, setSelectedArea] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [isBooked, setIsBooked] = useState(false);
+  const [imageFile, setImageFile] = useState(null); // <-- for image
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -30,17 +31,31 @@ function CreateReservations() {
     }
 
     try {
-      const response = await axios.post('http://localhost/reactapp2/blog_server/api/create-reservations.php', {
-        area_id: parseInt(selectedArea),
-        time_slot_id: parseInt(selectedTimeSlot),
-        is_booked: isBooked
-      });
+      const formData = new FormData();
+      formData.append('area_id', selectedArea);
+      formData.append('time_slot_id', selectedTimeSlot);
+      formData.append('is_booked', isBooked ? 1 : 0);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+  const response = await axios.post(
+    'http://localhost/reactapp2/blog_server/api/create-reservations.php',
+    {
+      area_id: parseInt(selectedArea),
+      time_slot_id: parseInt(selectedTimeSlot),
+      is_booked: isBooked ? 1 : 0
+    },
+    {
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
 
       setMessage(response.data.message || 'Reservation created successfully!');
-      // Optionally reset form
       setSelectedArea('');
       setSelectedTimeSlot('');
       setIsBooked(false);
+      setImageFile(null);
     } catch (error) {
       setMessage('Error creating reservation');
       console.error('Create reservation error:', error);
@@ -87,6 +102,17 @@ function CreateReservations() {
                   <option key={slot.id} value={slot.id}>{slot.slot_time}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="image" className="form-label">Choose Image</label>
+              <input
+                type="file"
+                id="image"
+                className="form-control"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files[0])}
+              />
             </div>
 
             <div className="form-check mb-3">
