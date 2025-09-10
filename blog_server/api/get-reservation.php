@@ -16,6 +16,8 @@ if (!isset($_GET['id'])) {
 $id = intval($_GET['id']);
 
 $sql = "SELECT r.id, 
+               r.area_id,
+               r.time_slot_id,
                a.name AS area_name, 
                a.description, 
                t.slot_time, 
@@ -25,6 +27,7 @@ $sql = "SELECT r.id,
         JOIN conservation_areas a ON r.area_id = a.id
         JOIN time_slots t ON r.time_slot_id = t.id
         WHERE r.id = $id";
+
 
 
 
