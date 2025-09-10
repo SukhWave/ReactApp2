@@ -1,17 +1,17 @@
 <?php
 session_start();
 
-// CORS headers
+// CORS headers for React app
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
-    exit();
+    exit(0);
 }
 
 // Require authentication
@@ -28,21 +28,19 @@ if ($_SESSION['user']['role'] !== 'admin') {
     exit();
 }
 
-require_once('../config/config.php');
 require_once('../config/database.php');
 
 // Only allow POST for delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Accept both JSON and form data
+    // Accept JSON input
     $rawInput = file_get_contents("php://input");
     $data = json_decode($rawInput, true);
 
+    $id = 0;
     if (isset($data['id'])) {
         $id = intval($data['id']);
     } elseif (isset($_POST['id'])) {
         $id = intval($_POST['id']);
-    } else {
-        $id = 0;
     }
 
     if ($id > 0) {
@@ -50,20 +48,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
-            echo json_encode(["success" => true, "message" => "Reservation deleted successfully."]);
+            echo json_encode([
+                "success" => true,
+                "message" => "Reservation deleted successfully."
+            ]);
         } else {
             http_response_code(500);
-            echo json_encode(["success" => false, "message" => "Failed to delete reservation."]);
+            echo json_encode([
+                "success" => false,
+                "message" => "Failed to delete reservation: " . $stmt->error
+            ]);
         }
 
         $stmt->close();
     } else {
         http_response_code(400);
-        echo json_encode(["success" => false, "message" => "Invalid reservation ID."]);
+        echo json_encode([
+            "success" => false,
+            "message" => "Invalid reservation ID."
+        ]);
     }
 } else {
     http_response_code(405);
-    echo json_encode(["success" => false, "message" => "Invalid request method."]);
+    echo json_encode([
+        "success" => false,
+        "message" => "Invalid request method."
+    ]);
 }
 
 $conn->close();

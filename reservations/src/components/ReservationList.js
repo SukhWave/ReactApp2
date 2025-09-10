@@ -1,3 +1,4 @@
+// src/components/ReservationList.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -5,7 +6,7 @@ import '../home.css';
 import { useAuth } from '../context/AuthContext';
 
 function ReservationList() {
-  const { user } = useAuth(); // Get logged-in user
+  const { user } = useAuth(); 
   const navigate = useNavigate();
 
   const [reservations, setReservations] = useState([]);
@@ -19,7 +20,6 @@ function ReservationList() {
       .catch(err => console.error('Error fetching reservations:', err));
   }, []);
 
-  // Pagination calculations
   const indexOfLast = currentPage * reservationsPerPage;
   const indexOfFirst = indexOfLast - reservationsPerPage;
   const currentReservations = reservations.slice(indexOfFirst, indexOfLast);
@@ -67,17 +67,16 @@ function ReservationList() {
                   Read More
                 </Link>
 
-                {/* Admin-only buttons */}
                 {user?.role === 'admin' && (
                   <div className="admin-buttons mt-2">
                     <button
-                      className="edit-btn"
+                      className="btn-edit"
                       onClick={() => navigate(`/edit-reservation/${reservation.id}`)}
                     >
                       Edit
                     </button>
                     <button
-                      className="delete-btn"
+                      className="btn-delete"
                       onClick={() => handleDelete(reservation.id)}
                     >
                       Delete
@@ -88,7 +87,7 @@ function ReservationList() {
             ))}
           </div>
 
-          {/* Pagination controls */}
+          {/* Pagination */}
           <div className="pagination">
             <button
               onClick={handlePrev}

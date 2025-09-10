@@ -1,4 +1,4 @@
- // src/components/EditReservations.js
+// src/components/EditReservations.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -23,8 +23,8 @@ const EditReservations = () => {
       try {
         const [reservationRes, areasRes, slotsRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/get-reservation.php?id=${id}`, { withCredentials: true }),
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/conservation-areas.php`, { withCredentials: true }),
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/time-slots.php`, { withCredentials: true })
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/get-areas.php`, { withCredentials: true }),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/get-timeslots.php`, { withCredentials: true })
         ]);
 
         const reservation = reservationRes.data;
@@ -48,26 +48,38 @@ const EditReservations = () => {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("id", id);
-      formData.append("area_id", areaId);
-      formData.append("time_slot_id", timeSlotId);
-      formData.append("is_booked", isBooked ? 1 : 0);
+      let payload;
+      let headers = { withCredentials: true };
 
+      // If image is a new file, use FormData
       if (image && typeof image !== "string") {
-        // only append if it's a new uploaded file
-        formData.append("image", image);
+        payload = new FormData();
+        payload.append("id", id);
+        payload.append("area_id", areaId);
+        payload.append("time_slot_id", timeSlotId);
+        payload.append("is_booked", isBooked ? 1 : 0);
+        payload.append("image", image);
+      } else {
+        // Send JSON if no new image
+        payload = {
+          id,
+          area_id: areaId,
+          time_slot_id: timeSlotId,
+          is_booked: isBooked ? 1 : 0
+        };
+        headers['headers'] = { "Content-Type": "application/json" };
       }
 
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/update-reservation.php`,
-        formData,
-        { withCredentials: true }
+        payload,
+        headers
       );
 
       navigate("/reservations");
     } catch (err) {
       setError("Failed to update reservation.");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }

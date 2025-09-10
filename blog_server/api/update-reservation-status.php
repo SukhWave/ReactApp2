@@ -2,29 +2,35 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+// CORS headers for React app
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-Type: application/json");
 
+require '../config/database.php'; // ensure correct path
+
+// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
-    exit();
+    exit(0);
 }
 
-require 'database.php';
-
+// Read JSON input
 $request_body = file_get_contents('php://input');
 $data = json_decode($request_body, true);
 
 if (!isset($data['id']) || !isset($data['is_booked'])) {
     http_response_code(400);
-    echo json_encode(['message' => 'Missing parameters']);
+    echo json_encode(['success' => false, 'message' => 'Missing parameters']);
     exit();
 }
 
 $id = intval($data['id']);
 $is_booked = $data['is_booked'] ? 1 : 0;
 
+// Update reservation status
 $stmt = $conn->prepare("UPDATE reservations SET is_booked=? WHERE id=?");
 $stmt->bind_param("ii", $is_booked, $id);
 
